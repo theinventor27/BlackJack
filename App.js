@@ -5,8 +5,12 @@ import {
   SafeAreaView,
   TouchableOpacity,
   FlatList,
+  Image,
 } from 'react-native';
 import React, {useState, useEffect} from 'react';
+
+import {DECKOFCARDS} from './Data/DECKOFCARDS';
+
 const App = () => {
   const [Deck, SetDeck] = useState();
   const [myCards, setMyCards] = useState([]);
@@ -29,22 +33,8 @@ const App = () => {
     'K',
   ];
 
-  //Creates a complete deck of cards.
-  const createDeck = () => {
-    var deckPlaceholder = [];
-    var id = 0;
-    for (const suit of suits) {
-      for (const value of values) {
-        deckPlaceholder.push({id, suit, value});
-        id++;
-      }
-    }
-    SetDeck(deckPlaceholder);
-    console.log(deckPlaceholder);
-  };
-
   const shuffleDeck = () => {
-    var deckPlaceholder = Deck;
+    var deckPlaceholder = DECKOFCARDS;
     for (let i = deckPlaceholder.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
       [deckPlaceholder[i], deckPlaceholder[j]] = [
@@ -70,17 +60,23 @@ const App = () => {
       <View>
         <Text style={styles.opponentText}>Opponent:</Text>
       </View>
-      <View>
+      <View style={styles.flatlistWrapper}>
         <Text style={styles.opponentText}>My Cards:</Text>
         <FlatList
+          contentContainerStyle={{alignItems: 'center'}}
+          numColumns={4}
+          scrollEnabled={false}
           data={myCards}
-          extraData={this.state}
           keyExtractor={item => item.id}
-          renderItem={({item}) => <Text>{item.value}</Text>}
+          renderItem={({item}) => (
+            <View>
+              <Image style={styles.cardImg} source={item.img} />
+            </View>
+          )}
         />
       </View>
       <View style={styles.buttonsWrapper}>
-        <TouchableOpacity onPress={createDeck} style={styles.start}>
+        <TouchableOpacity style={styles.start}>
           <Text style={styles.startText}>Generate Deck</Text>
         </TouchableOpacity>
         <TouchableOpacity onPress={shuffleDeck} style={styles.start}>
@@ -110,6 +106,9 @@ const styles = StyleSheet.create({
     marginLeft: 10,
     color: 'white',
   },
+  flatlistWrapper: {
+    height: 400,
+  },
   myCardsItems: {
     color: 'white',
   },
@@ -123,5 +122,11 @@ const styles = StyleSheet.create({
   },
   startText: {
     textAlign: 'center',
+  },
+  cardImg: {
+    height: 90,
+    width: 60,
+    marginHorizontal: 10,
+    marginVertical: 10,
   },
 });
