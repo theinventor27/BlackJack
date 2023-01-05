@@ -6,7 +6,7 @@ import {
   TouchableOpacity,
   FlatList,
 } from 'react-native';
-import React, {useState} from 'react';
+import React, {useState, useEffect} from 'react';
 const App = () => {
   const [Deck, SetDeck] = useState();
   const [myCards, setMyCards] = useState([]);
@@ -59,7 +59,7 @@ const App = () => {
     var deckPlaceholder = Deck;
     const drawnCard = deckPlaceholder.shift();
     SetDeck(deckPlaceholder);
-    myCardsCopy = myCards;
+    myCardsCopy = [...myCards];
     myCardsCopy.push(drawnCard);
     setMyCards(myCardsCopy);
     console.log(myCards);
@@ -74,7 +74,7 @@ const App = () => {
         <Text style={styles.opponentText}>My Cards:</Text>
         <FlatList
           data={myCards}
-          extraData={myCards}
+          extraData={this.state}
           keyExtractor={item => item.id}
           renderItem={({item}) => <Text>{item.value}</Text>}
         />

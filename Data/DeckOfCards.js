@@ -1,4 +1,3 @@
-u
 [
   {id: 0, suit: 'hearts', value: 'A'},
   {id: 1, suit: 'hearts', value: '2'},
