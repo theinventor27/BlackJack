@@ -4,10 +4,13 @@ import {
   Text,
   SafeAreaView,
   TouchableOpacity,
+  FlatList,
 } from 'react-native';
 import React, {useState} from 'react';
 const App = () => {
   const [Deck, SetDeck] = useState();
+  const [myCards, setMyCards] = useState([]);
+  const [opponentCards, setOpponentCards] = useState([]);
 
   const suits = ['hearts', 'diamonds', 'spades', 'clubs'];
   const values = [
@@ -29,10 +32,11 @@ const App = () => {
   //Creates a complete deck of cards.
   const createDeck = () => {
     var deckPlaceholder = [];
-
+    var id = 0;
     for (const suit of suits) {
       for (const value of values) {
-        deckPlaceholder.push({suit, value});
+        deckPlaceholder.push({id, suit, value});
+        id++;
       }
     }
     SetDeck(deckPlaceholder);
@@ -51,34 +55,29 @@ const App = () => {
     SetDeck(deckPlaceholder);
   };
 
-  const drawCard = () => {
+  const drawCards = () => {
     var deckPlaceholder = Deck;
     const drawnCard = deckPlaceholder.shift();
     SetDeck(deckPlaceholder);
-    console.log(drawnCard);
+    myCardsCopy = myCards;
+    myCardsCopy.push(drawnCard);
+    setMyCards(myCardsCopy);
+    console.log(myCards);
   };
 
   return (
     <SafeAreaView style={styles.screen}>
       <View>
         <Text style={styles.opponentText}>Opponent:</Text>
-
-        <Text>This is placeholder text</Text>
-        <Text>This is placeholder text</Text>
-        <Text>This is placeholder text</Text>
-        <Text>This is placeholder text</Text>
-        <Text>This is placeholder text</Text>
-        <Text>This is placeholder text</Text>
-        <Text>This is placeholder text</Text>
-        <Text>This is placeholder text</Text>
-        <Text>This is placeholder text</Text>
-        <Text>This is placeholder text</Text>
-        <Text>This is placeholder text</Text>
-        <Text>This is placeholder text</Text>
-        <Text>This is placeholder text</Text>
-        <Text>This is placeholder text</Text>
-        <Text>This is placeholder text</Text>
-        <Text>This is placeholder text</Text>
+      </View>
+      <View>
+        <Text style={styles.opponentText}>My Cards:</Text>
+        <FlatList
+          data={myCards}
+          extraData={myCards}
+          keyExtractor={item => item.id}
+          renderItem={({item}) => <Text>{item.value}</Text>}
+        />
       </View>
       <View style={styles.buttonsWrapper}>
         <TouchableOpacity onPress={createDeck} style={styles.start}>
@@ -87,8 +86,8 @@ const App = () => {
         <TouchableOpacity onPress={shuffleDeck} style={styles.start}>
           <Text style={styles.startText}>Shuffle Deck</Text>
         </TouchableOpacity>
-        <TouchableOpacity onPress={drawCard} style={styles.start}>
-          <Text style={styles.startText}>Draw Card</Text>
+        <TouchableOpacity onPress={drawCards} style={styles.start}>
+          <Text style={styles.startText}>Draw Cards</Text>
         </TouchableOpacity>
       </View>
     </SafeAreaView>
@@ -109,6 +108,9 @@ const styles = StyleSheet.create({
   },
   opponentText: {
     marginLeft: 10,
+    color: 'white',
+  },
+  myCardsItems: {
     color: 'white',
   },
   start: {
