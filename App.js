@@ -12,26 +12,16 @@ import React, {useState, useEffect} from 'react';
 import {DECKOFCARDS} from './Data/DECKOFCARDS';
 
 const App = () => {
-  const [Deck, SetDeck] = useState();
+  const [Deck, SetDeck] = useState(DECKOFCARDS);
   const [myCards, setMyCards] = useState([]);
   const [opponentCards, setOpponentCards] = useState([]);
-
-  const suits = ['hearts', 'diamonds', 'spades', 'clubs'];
-  const values = [
-    'A',
-    '2',
-    '3',
-    '4',
-    '5',
-    '6',
-    '7',
-    '8',
-    '9',
-    '10',
-    'J',
-    'Q',
-    'K',
-  ];
+  const [money, setMoney] = useState(1500);
+  //*The game needs to have various game states to figure out what to render on the screen.
+  //*Null - the player has not started the game yet.
+  //*Playing - starting hand has been dealt, player must decide if they will draw again or stand.
+  const [gamestate, setGamestate] = useState(null);
+  const [myCount, setMyCount] = useState(0);
+  const [opponentCount, setOpponentCount] = useState(0);
 
   const shuffleDeck = () => {
     var deckPlaceholder = DECKOFCARDS;
@@ -45,23 +35,111 @@ const App = () => {
     SetDeck(deckPlaceholder);
   };
 
-  const drawCards = () => {
-    var deckPlaceholder = Deck;
-    const drawnCard = deckPlaceholder.shift();
-    SetDeck(deckPlaceholder);
-    myCardsCopy = [...myCards];
-    myCardsCopy.push(drawnCard);
-    setMyCards(myCardsCopy);
-    console.log(myCards);
+  const drawCard = (cards, setCards, times) => {
+    const deckPlaceholder = Deck;
+    var cardsCopy = [...cards];
+
+    for (let i = 0; i < times; i++) {
+      var drawnCard = deckPlaceholder.shift();
+      SetDeck(deckPlaceholder);
+      // Reset the cardsCopy array to the original value of the cards array
+      cardsCopy.push(drawnCard);
+      console.log(cardsCopy);
+    }
+    setCards(cardsCopy);
   };
+
+  const startGame = () => {
+    shuffleDeck();
+    //Draw two cards for the player
+    drawCard(myCards, setMyCards, 2);
+
+    //Draw two cards for the dealer
+    drawCard(opponentCards, setOpponentCards, 2);
+    //Prompt the user pick if he wants to hit, or stand.
+    setGamestate('playing');
+  };
+
+  const Hit = () => {
+    drawCard(myCards, setMyCards, 1);
+  };
+
+  const StartButtonComponent = () => {
+    return (
+      <>
+        <TouchableOpacity
+          onPress={() => startGame()}
+          style={styles.startGameButton}>
+          <Text style={styles.startText}>Start</Text>
+        </TouchableOpacity>
+      </>
+    );
+  };
+
+  const PlayingButtonSComponenet = () => {
+    return (
+      <>
+        <TouchableOpacity onPress={() => Hit()} style={styles.startGameButton}>
+          <Text style={styles.startText}>Hit</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          onPress={console.log('stand')}
+          style={styles.startGameButton}>
+          <Text style={styles.startText}>Stand</Text>
+        </TouchableOpacity>
+      </>
+    );
+  };
+
+  const keepTrackOfCardCount = () => {
+    let sum = 0;
+    for (const obj in myCards) {
+      if (myCards[obj].value == 'A') {
+        if (sum + 11 <= 21) {
+          sum += 11;
+        } else {
+          sum++;
+        }
+      } else {
+        sum += myCards[obj].value;
+      }
+    }
+    console.log(sum);
+    setMyCount(sum);
+  };
+  useEffect(() => {
+    keepTrackOfCardCount();
+  }, [myCards]);
 
   return (
     <SafeAreaView style={styles.screen}>
-      <View>
-        <Text style={styles.opponentText}>Opponent:</Text>
+      <View style={styles.moneyTextWrapper}>
+        <Text style={styles.moneyText}>${money}</Text>
+      </View>
+
+      <View style={styles.flatlistWrapper}>
+        <View style={styles.PlayerContainer}>
+          <Text style={styles.dealerText}>Dealer:</Text>
+          <Text style={styles.countText}>{opponentCount}</Text>
+        </View>
+        <FlatList
+          contentContainerStyle={{alignItems: 'center'}}
+          numColumns={4}
+          scrollEnabled={false}
+          data={opponentCards}
+          keyExtractor={item => item.id}
+          renderItem={({item}) => (
+            <View>
+              <Image style={styles.cardImg} source={item.img} />
+            </View>
+          )}
+        />
       </View>
       <View style={styles.flatlistWrapper}>
-        <Text style={styles.opponentText}>My Cards:</Text>
+        <View style={styles.PlayerContainer}>
+          <Text style={styles.dealerText}>My Cards:</Text>
+          <Text style={styles.countText}>{myCount}</Text>
+        </View>
         <FlatList
           contentContainerStyle={{alignItems: 'center'}}
           numColumns={4}
@@ -76,15 +154,13 @@ const App = () => {
         />
       </View>
       <View style={styles.buttonsWrapper}>
-        <TouchableOpacity style={styles.start}>
-          <Text style={styles.startText}>Generate Deck</Text>
-        </TouchableOpacity>
-        <TouchableOpacity onPress={shuffleDeck} style={styles.start}>
-          <Text style={styles.startText}>Shuffle Deck</Text>
-        </TouchableOpacity>
-        <TouchableOpacity onPress={drawCards} style={styles.start}>
-          <Text style={styles.startText}>Draw Cards</Text>
-        </TouchableOpacity>
+        {gamestate === null ? (
+          <StartButtonComponent />
+        ) : gamestate === 'playing' ? (
+          <PlayingButtonSComponenet />
+        ) : (
+          <HitButtonComponent />
+        )}
       </View>
     </SafeAreaView>
   );
@@ -97,17 +173,31 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: 'darkgreen',
   },
+  moneyText: {
+    color: 'yellow',
+    fontWeight: 'bold',
+    textAlign: 'right',
+    marginRight: 10,
+  },
+
   buttonsWrapper: {
     marginTop: 20,
     flexDirection: 'row',
     justifyContent: 'center',
   },
-  opponentText: {
+  dealerText: {
+    fontSize: 15,
     marginLeft: 10,
     color: 'white',
   },
+  countText: {
+    fontSize: 12,
+    marginLeft: 10,
+    marginBottom: 15,
+    color: 'white',
+  },
   flatlistWrapper: {
-    height: 400,
+    height: 300,
   },
   myCardsItems: {
     color: 'white',
@@ -117,6 +207,14 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
     width: 100,
     height: 30,
+    backgroundColor: 'white',
+    marginHorizontal: 10,
+  },
+  startGameButton: {
+    justifyContent: 'center',
+    alignSelf: 'center',
+    width: 100,
+    height: 60,
     backgroundColor: 'white',
     marginHorizontal: 10,
   },
