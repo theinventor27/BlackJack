@@ -19,6 +19,7 @@ const App = () => {
   //*The game needs to have various game states to figure out what to render on the screen.
   //*Null - the player has not started the game yet.
   //*Playing - starting hand has been dealt, player must decide if they will draw again or stand.
+  //*Lost - Player has busted
   const [gamestate, setGamestate] = useState(null);
   const [myCount, setMyCount] = useState(0);
   const [opponentCount, setOpponentCount] = useState(0);
@@ -91,25 +92,44 @@ const App = () => {
     );
   };
 
-  const keepTrackOfCardCount = () => {
+  const keepTrackOfCardCount = (cards, setCount) => {
     let sum = 0;
-    for (const obj in myCards) {
-      if (myCards[obj].value == 'A') {
+    let aceCount = 0;
+    //Check if card is an ace, if not, add to sum
+    for (const obj in cards) {
+      if (cards[obj].value == 'A') {
         if (sum + 11 <= 21) {
-          sum += 11;
+          aceCount++;
         } else {
-          sum++;
+          sum += cards[obj].value;
         }
       } else {
-        sum += myCards[obj].value;
+        sum += cards[obj].value;
       }
     }
+
+    //add correct number of aces
+    while (aceCount > 0) {
+      if (sum + 11 <= 21) {
+        sum += 11;
+      } else {
+        sum += 1;
+      }
+      aceCount--;
+    }
+
+    if (sum > 21) {
+      sum = 'Busted!';
+    }
+
     console.log(sum);
-    setMyCount(sum);
+    setCount(sum);
   };
+
   useEffect(() => {
-    keepTrackOfCardCount();
-  }, [myCards]);
+    keepTrackOfCardCount(myCards, setMyCount);
+    keepTrackOfCardCount(opponentCards, setOpponentCount);
+  }, [myCards, opponentCards]);
 
   return (
     <SafeAreaView style={styles.screen}>

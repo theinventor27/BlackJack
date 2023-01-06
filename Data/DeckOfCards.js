@@ -6,7 +6,7 @@ export const DECKOFCARDS = [
     img: require('../Assets/CardImages/ace_of_hearts.png'),
   },
   {
-    id: 1,
+    id: 1,  
     suit: 'hearts',
     value: 2,
     img: require('../Assets/CardImages/2_of_hearts.png'),
