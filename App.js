@@ -16,6 +16,7 @@ const App = () => {
   const [myCards, setMyCards] = useState([]);
   const [opponentCards, setOpponentCards] = useState([]);
   const [money, setMoney] = useState(1500);
+
   //*The game needs to have various game states to figure out what to render on the screen.
   //*Null - the player has not started the game yet.
   //*Playing - starting hand has been dealt, player must decide if they will draw again or stand.
@@ -54,7 +55,6 @@ const App = () => {
     shuffleDeck();
     //Draw two cards for the player
     drawCard(myCards, setMyCards, 2);
-
     //Draw two cards for the dealer
     drawCard(opponentCards, setOpponentCards, 2);
     //Prompt the user pick if he wants to hit, or stand.
@@ -63,6 +63,23 @@ const App = () => {
 
   const Hit = () => {
     drawCard(myCards, setMyCards, 1);
+  };
+
+  const ResetGame = () => {
+    //Clear dealer and players hands
+    setMyCards([]);
+    setOpponentCards([]);
+    setMyCount(0);
+    setOpponentCount(0);
+  };
+  const DealNewHand = () => {
+    ResetGame();
+    setGamestate('playing');
+    drawCard([], setMyCards, 2);
+    //Draw two cards for the dealer
+    drawCard([], setOpponentCards, 2);
+    var _myOpponentCards = opponentCards;
+    console.log(_myOpponentCards.img );
   };
 
   const StartButtonComponent = () => {
@@ -77,7 +94,7 @@ const App = () => {
     );
   };
 
-  const PlayingButtonSComponenet = () => {
+  const PlayingButtonsComponent = () => {
     return (
       <>
         <TouchableOpacity onPress={() => Hit()} style={styles.startGameButton}>
@@ -92,6 +109,17 @@ const App = () => {
     );
   };
 
+  const LostHandComponent = () => {
+    return (
+      <>
+        <TouchableOpacity
+          onPress={() => DealNewHand()}
+          style={styles.startGameButton}>
+          <Text style={styles.startText}>Deal New Hand</Text>
+        </TouchableOpacity>
+      </>
+    );
+  };
   const keepTrackOfCardCount = (cards, setCount) => {
     let sum = 0;
     let aceCount = 0;
@@ -120,6 +148,7 @@ const App = () => {
 
     if (sum > 21) {
       sum = 'Busted!';
+      setGamestate('lost');
     }
 
     console.log(sum);
@@ -131,6 +160,9 @@ const App = () => {
     keepTrackOfCardCount(opponentCards, setOpponentCount);
   }, [myCards, opponentCards]);
 
+
+  //!I need to check if the opponent has cards and if he does i need to render the first card upside down.
+  //!Also i need to only render the cards shown count.
   return (
     <SafeAreaView style={styles.screen}>
       <View style={styles.moneyTextWrapper}>
@@ -177,10 +209,10 @@ const App = () => {
         {gamestate === null ? (
           <StartButtonComponent />
         ) : gamestate === 'playing' ? (
-          <PlayingButtonSComponenet />
-        ) : (
-          <HitButtonComponent />
-        )}
+          <PlayingButtonsComponent />
+        ) : gamestate === 'lost' ? (
+          <LostHandComponent />
+        ) : null}
       </View>
     </SafeAreaView>
   );
