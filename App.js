@@ -17,13 +17,16 @@ const App = () => {
   const [opponentCards, setOpponentCards] = useState([]);
   const [money, setMoney] = useState(1500);
 
-  //*The game needs to have various game states to figure out what to render on the screen.
+  //The game needs to have various game states to figure out what to render on the screen.
   //*Null - the player has not started the game yet.
   //*Playing - starting hand has been dealt, player must decide if they will draw again or stand.
-  //*Lost - Player has busted
+  //*Lost - Player has busted.
+  //*Won - Player won the hand.
+  //*Draw - Player drawed.
   const [gamestate, setGamestate] = useState(null);
   const [myCount, setMyCount] = useState(0);
   const [opponentCount, setOpponentCount] = useState(0);
+  const [newGameStarted, setNewGameStarted] = useState(false);
 
   const shuffleDeck = () => {
     var deckPlaceholder = DECKOFCARDS;
@@ -46,7 +49,6 @@ const App = () => {
       SetDeck(deckPlaceholder);
       // Reset the cardsCopy array to the original value of the cards array
       cardsCopy.push(drawnCard);
-      console.log(cardsCopy);
     }
     setCards(cardsCopy);
   };
@@ -55,14 +57,37 @@ const App = () => {
     shuffleDeck();
     //Draw two cards for the player
     drawCard(myCards, setMyCards, 2);
-    //Draw two cards for the dealer
+    //Draw two cards for the dealerr
     drawCard(opponentCards, setOpponentCards, 2);
     //Prompt the user pick if he wants to hit, or stand.
     setGamestate('playing');
+    setNewGameStarted(true);
+  };
+
+  const HideDealerCard = () => {
+    if (opponentCount > 0) {
+      opponentCards[0].img = require('./Assets/CardImages/_back1.png');
+      setOpponentCards(opponentCards);
+    }
   };
 
   const Hit = () => {
     drawCard(myCards, setMyCards, 1);
+  };
+  const Stand = () => {
+    //check if opponent hand is above 17
+    if (opponentCount >= 17) {
+      //check if players hand is greater than opponent
+      if (myCount > opponentCount) {
+        //player won
+      }
+      if (myCount < opponentCount) {
+        //player lost
+      }
+      if ((myCount = opponentCount)) {
+        //player tied
+      }
+    }
   };
 
   const ResetGame = () => {
@@ -78,8 +103,6 @@ const App = () => {
     drawCard([], setMyCards, 2);
     //Draw two cards for the dealer
     drawCard([], setOpponentCards, 2);
-    var _myOpponentCards = opponentCards;
-    console.log(_myOpponentCards.img );
   };
 
   const StartButtonComponent = () => {
@@ -100,9 +123,7 @@ const App = () => {
         <TouchableOpacity onPress={() => Hit()} style={styles.startGameButton}>
           <Text style={styles.startText}>Hit</Text>
         </TouchableOpacity>
-        <TouchableOpacity
-          onPress={console.log('stand')}
-          style={styles.startGameButton}>
+        <TouchableOpacity onPress={null} style={styles.startGameButton}>
           <Text style={styles.startText}>Stand</Text>
         </TouchableOpacity>
       </>
@@ -126,11 +147,7 @@ const App = () => {
     //Check if card is an ace, if not, add to sum
     for (const obj in cards) {
       if (cards[obj].value == 'A') {
-        if (sum + 11 <= 21) {
-          aceCount++;
-        } else {
-          sum += cards[obj].value;
-        }
+        aceCount++;
       } else {
         sum += cards[obj].value;
       }
@@ -151,15 +168,15 @@ const App = () => {
       setGamestate('lost');
     }
 
-    console.log(sum);
     setCount(sum);
   };
 
   useEffect(() => {
+    HideDealerCard();
+
     keepTrackOfCardCount(myCards, setMyCount);
     keepTrackOfCardCount(opponentCards, setOpponentCount);
-  }, [myCards, opponentCards]);
-
+  }, [myCards, opponentCards, newGameStarted]);
 
   //!I need to check if the opponent has cards and if he does i need to render the first card upside down.
   //!Also i need to only render the cards shown count.
@@ -274,8 +291,8 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   cardImg: {
-    height: 90,
-    width: 60,
+    height: 100,
+    width: 70,
     marginHorizontal: 10,
     marginVertical: 10,
   },
